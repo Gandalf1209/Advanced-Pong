@@ -11,8 +11,13 @@ public class Ball {
 	public int yspeed = 11;
 	public int dx = -xspeed;
 	public int dy = yspeed;
+	public int seenX;
+	public int seenY;
 	
 	public boolean player = true;
+	
+	public boolean invisible = false;
+	public int invisiTime = 0;
 	
 	public Ball(int x, int y, int w, int h) {
 		this.x = x;
@@ -24,6 +29,10 @@ public class Ball {
 	public void movementHandler() {
 		setX(getX() + dx);
 		setY(getY() + dy);
+		if (!invisible) {
+			seenX = dx;
+			seenY = dy;
+		}
 	}
 
 	public int getX() {

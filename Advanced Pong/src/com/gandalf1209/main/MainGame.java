@@ -30,7 +30,7 @@ public class MainGame implements Game {
 	private Display d;
 	private Player p;
 	public Computer c;
-	private Ball b;
+	public Ball b;
 	
 	private int lastSeconds = (int) System.currentTimeMillis();
 	private int seconds = (int) System.currentTimeMillis();
@@ -117,21 +117,25 @@ public class MainGame implements Game {
 		}
 		
 		g.setColor(g.hex("#D4D4D4"));
-		g.fillOval(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+		if (!b.invisible) {
+			g.fillOval(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+		}
 		
 		g.addImage(Textures.paddle, p.getX(), p.getY(), p.getWidth(), p.getHeight());
 		g.addImage(Textures.paddle, c.getX(), c.getY(), c.getWidth(), c.getHeight());
 		
 		g.setFont(new Font("Code New Roman", Font.PLAIN, 30));
 		g.setColor(g.hex("#FFFFFF"));
-		if (!ready) {
-			g.drawString("Press ESCAPE to continue!", 200, 300);
-		}
 		g.drawString("You: " + p.score, 15, 30);
 		g.drawString("CPU: " + c.score, 15, 60);
 		
 		if (p.power != null) {
 			g.addImage(p.power.getTexture(), 375, 15, 50, 50);
+			g.drawString(p.power.getName(), 15, (HEIGHTX) - 15);
+		}
+		
+		if (!ready) {
+			g.drawString("Press ESCAPE to continue!", 200, 300);
 		}
 	}
 
@@ -208,6 +212,9 @@ public class MainGame implements Game {
 				if (slow) {
 					slowTime = 99;
 				}
+				if (b.invisible) {
+					b.invisiTime = 49;
+				}
 				resetGame();
 			}
 			if (b.getX() > WIDTH) {
@@ -217,6 +224,9 @@ public class MainGame implements Game {
 				}
 				if (slow) {
 					slowTime = 119;
+				}
+				if (b.invisible) {
+					b.invisiTime = 49;
 				}
 				resetGame();
 			}
@@ -233,17 +243,32 @@ public class MainGame implements Game {
 					Sound.play("Powerup.wav");
 				}
 			}
+			if (b.invisible) {
+				b.invisiTime++;
+				if (b.invisiTime == 50) {
+					b.invisiTime = 0;
+					b.invisible = false;
+				}
+			}
 			
 			// Computer AI
 			if (!c.frozen) {
-				if (c.getY() < b.getY()) {
-					c.setY(c.getY() + c.getSpeed());
-				}
-				if (c.getY() > b.getY()) {
-					c.setY(c.getY() - c.getSpeed());
-				}
-				if (b.xspeed > 20) {
-					c.setSpeed(c.getSpeed() * 3);
+				if (!b.invisible) {
+					if (c.getY() < b.getY()) {
+						c.setY(c.getY() + c.getSpeed());
+					}
+					if (c.getY() > b.getY()) {
+						c.setY(c.getY() - c.getSpeed());
+					}
+					if (b.xspeed > 20) {
+						c.setSpeed(c.getSpeed() * 3);
+					}
+				} else {
+					if (b.seenX < 0) {
+						c.setY(c.getY() + c.getSpeed());
+					} else {
+						c.setY(c.getY() - c.getSpeed());
+					}
 				}
 			}
 			if (c.frozen) {

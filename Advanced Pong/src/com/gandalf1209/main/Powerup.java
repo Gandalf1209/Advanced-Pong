@@ -13,6 +13,8 @@ public class Powerup {
 	public static Powerup freeze;
 	public static Powerup aimbot;
 	public static Powerup slowmo;
+	public static Powerup bonus2;
+	public static Powerup invisi;
 	
 	private BufferedImage texture;
 	private String name;
@@ -48,6 +50,12 @@ public class Powerup {
 			MainGame.game.slow = true;
 			Sound.play("Slow.wav");
 		}
+		if (p.getName().equalsIgnoreCase("bonus2")) {
+			player.bonus += 2;
+		}
+		if (p.getName().equalsIgnoreCase("invisiball")) {
+			MainGame.game.b.invisible = true;
+		}
 		player.power = null;
 	}
 	
@@ -73,6 +81,8 @@ public class Powerup {
 		freeze = new Powerup(Textures.freeze, "Freeze");
 		aimbot = new Powerup(Textures.aimbot, "AimBot");
 		slowmo = new Powerup(Textures.slowmo, "SlowMo");
+		bonus2 = new Powerup(Textures.bonus2, "Bonus2");
+		invisi = new Powerup(Textures.invisi, "Invisiball");
 	}
 
 	public BufferedImage getTexture() {

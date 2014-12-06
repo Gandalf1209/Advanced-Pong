@@ -13,6 +13,8 @@ public class Textures {
 	public static BufferedImage freeze;
 	public static BufferedImage aimbot;
 	public static BufferedImage slowmo;
+	public static BufferedImage bonus2;
+	public static BufferedImage invisi;
 	
 	public static void init() {
 		GraphicsLoader gl = new GraphicsLoader();
@@ -24,6 +26,8 @@ public class Textures {
 		freeze = gl.loadGraphic("Freeze.png");
 		aimbot = gl.loadGraphic("AimBot.png");
 		slowmo = gl.loadGraphic("SlowMo.png");
+		bonus2 = gl.loadGraphic("Bonus2.png");
+		invisi = gl.loadGraphic("Invisiball.png");
 	}
 	
 }
