@@ -7,6 +7,9 @@ public class Player {
 	private int w;
 	private int h;
 	
+	private int lastY = 0;
+	private int speed;
+	
 	public int score = 0;
 	public int bonus = 1;
 	
@@ -47,6 +50,22 @@ public class Player {
 
 	public void setHeight(int h) {
 		this.h = h;
+	}
+
+	public int getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+
+	public int getLastY() {
+		return lastY;
+	}
+
+	public void setLastY(int lastY) {
+		this.lastY = lastY;
 	}
 	
 }

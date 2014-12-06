@@ -112,24 +112,38 @@ public class MainGame implements Game {
 	public void update() {
 		
 		if (ready) {
+			// Player Logic
+			p.setSpeed(Math.abs(p.getY() - p.getLastY()));
+			p.setLastY(p.getY());
+			
 			// Ball Handler
 			b.movementHandler();
 			if (b.getY() < (HEIGHTX - HEIGHT) + b.getHeight()) {
 				b.dy = b.yspeed;
+				b.dx -= 1;
 			}
 			if (b.getY() > HEIGHTX - b.getHeight()) {
 				b.dy = -b.yspeed;
+				b.dx -= 1;
 			}
-			if (b.getX() == p.getX() && b.getY() + b.getHeight() > p.getY()
+			if (b.getX() >= p.getX() - b.getWidth() 
+					&& b.getX() <= p.getX() + p.getWidth()
+					&& b.getY() + b.getHeight() > p.getY()
 					&& b.getY() < p.getY() + p.getHeight()) {
 				if (b.getY() + b.getHeight() > p.getY() + (p.getHeight() / 2)) {
 					b.dy = b.yspeed;
 				} else {
 					b.dy = -b.yspeed;
 				}
-				b.dx = b.xspeed;
+				if (p.getSpeed() > 10) {
+					b.dx = p.getSpeed() / 2;
+				} else {
+					b.dx = b.xspeed;
+				}
 			}
-			if (b.getX() == c.getX() && b.getY() + b.getHeight() > c.getY()
+			if (b.getX() >= c.getX() - b.getWidth() 
+					&& b.getX() <= c.getX() + c.getWidth()
+					&& b.getY() + b.getHeight() > c.getY()
 					&& b.getY() < c.getY() + c.getHeight()) {
 				if (b.getY() + b.getHeight() > c.getY() + (c.getHeight() / 2)) {
 					b.dy = b.yspeed;
