@@ -9,6 +9,10 @@ public class Textures {
 	public static BufferedImage bg;
 	public static BufferedImage paddle;
 	public static BufferedImage ptemplate;
+	public static BufferedImage bonus;
+	public static BufferedImage freeze;
+	public static BufferedImage aimbot;
+	public static BufferedImage slowmo;
 	
 	public static void init() {
 		GraphicsLoader gl = new GraphicsLoader();
@@ -16,6 +20,10 @@ public class Textures {
 		bg = gl.loadGraphic("BG.png");
 		paddle = gl.loadGraphic("Paddle.png");
 		ptemplate = gl.loadGraphic("PTemplate.png");
+		bonus = gl.loadGraphic("Bonus.png");
+		freeze = gl.loadGraphic("Freeze.png");
+		aimbot = gl.loadGraphic("AimBot.png");
+		slowmo = gl.loadGraphic("SlowMo.png");
 	}
 	
 }

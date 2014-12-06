@@ -12,6 +12,8 @@ public class Ball {
 	public int dx = -xspeed;
 	public int dy = yspeed;
 	
+	public boolean player = true;
+	
 	public Ball(int x, int y, int w, int h) {
 		this.x = x;
 		this.y = y;

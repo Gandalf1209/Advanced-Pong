@@ -13,11 +13,20 @@ public class Player {
 	public int score = 0;
 	public int bonus = 1;
 	
+	public Powerup power;
+	
+	public boolean aimbot = false;
+	public int aimTime = 0;
+	
 	public Player(int x, int y, int w, int h) {
 		this.x = x;
 		this.y = y;
 		this.w = w;
 		this.h = h;
+	}
+	
+	public void usePowerup() {
+		Powerup.use(this, power);
 	}
 
 	public int getX() {

@@ -11,6 +11,11 @@ public class Computer {
 	public int score = 0;
 	public int bonus = 1;
 	
+	public Powerup power;
+	
+	public boolean frozen = false;
+	public int freezeTime = 0;
+	
 	public Computer(int x, int y, int w, int h, int speed) {
 		this.x = x;
 		this.y = y;

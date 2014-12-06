@@ -6,7 +6,10 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
+import com.gandalf1209.yge2.audio.Sound;
 import com.gandalf1209.yge2.engine.Game;
+import com.gandalf1209.yge2.engine.Mathf;
+import com.gandalf1209.yge2.engine.Vector2;
 import com.gandalf1209.yge2.graphics.Display;
 import com.gandalf1209.yge2.graphics.GraphicsX;
 import com.gandalf1209.yge2.input.Keys;
@@ -14,20 +17,27 @@ import com.gandalf1209.yge2.util.FontHandler;
 
 public class MainGame implements Game {
 
+	public static final MainGame game = new MainGame();
 	public static final int WIDTH = 800;
 	public static final int HEIGHT = 600;
 	public static int WIDTHX;
 	public static int HEIGHTX;
 	
 	public boolean ready = false;
+	public boolean slow = false;
+	public int slowTime = 0;
 	
 	private Display d;
 	private Player p;
-	private Computer c;
+	public Computer c;
 	private Ball b;
 	
+	private int lastSeconds = (int) System.currentTimeMillis();
+	private int seconds = (int) System.currentTimeMillis();
+	private int realSeconds = 0;
+	
 	public static void main(String[] args) {
-		new MainGame().init();
+		game.init();
 	}
 	
 	public void init() {
@@ -37,6 +47,9 @@ public class MainGame implements Game {
 		b = new Ball(400, 300, 20, 20);
 		
 		Textures.init();
+		Powerup.init();
+		Sound.setDefaultLoadingDirectory("/audio/");
+		
 		FontHandler fh = new FontHandler();
 		fh.setDefaultLoadingDirectory("/fonts/");
 		fh.loadFont("Code New Roman.otf");
@@ -51,6 +64,11 @@ public class MainGame implements Game {
 						ready = true;
 					} else {
 						ready = false;
+					}
+				}
+				if (key == KeyEvent.VK_SPACE) {
+					if (ready && p.power != null) {
+						p.usePowerup();
 					}
 				}
 			}
@@ -74,7 +92,7 @@ public class MainGame implements Game {
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				if (ready) {
+				if (ready && !p.aimbot) {
 					p.setY(e.getY() - (50 + d.getWindow().getInsets().top));
 				}
 			}
@@ -93,6 +111,11 @@ public class MainGame implements Game {
 	public void render(GraphicsX g) {
 		g.setBGImage(Textures.bg);
 		
+		for (int i = 0; i < Powerup.active.size(); i++) {
+			Powerup p = Powerup.active.get(i);
+			g.addImage(p.getTexture(), new Vector2(p.getX(), p.getY()), 30, 30);
+		}
+		
 		g.setColor(g.hex("#D4D4D4"));
 		g.fillOval(b.getX(), b.getY(), b.getWidth(), b.getHeight());
 		
@@ -106,6 +129,10 @@ public class MainGame implements Game {
 		}
 		g.drawString("You: " + p.score, 15, 30);
 		g.drawString("CPU: " + c.score, 15, 60);
+		
+		if (p.power != null) {
+			g.addImage(p.power.getTexture(), 375, 15, 50, 50);
+		}
 	}
 
 	@Override
@@ -115,16 +142,28 @@ public class MainGame implements Game {
 			// Player Logic
 			p.setSpeed(Math.abs(p.getY() - p.getLastY()));
 			p.setLastY(p.getY());
+			if (p.aimbot) {
+				p.aimTime++;
+				p.setY(b.getY());
+				if (p.aimTime == 30) {
+					p.aimbot = false;
+					p.aimTime = 0;
+				}
+			}
 			
 			// Ball Handler
 			b.movementHandler();
 			if (b.getY() < (HEIGHTX - HEIGHT) + b.getHeight()) {
 				b.dy = b.yspeed;
-				b.dx -= 1;
+				if (b.dx > 1) {
+					b.dx -= 1;
+				}
 			}
 			if (b.getY() > HEIGHTX - b.getHeight()) {
 				b.dy = -b.yspeed;
-				b.dx -= 1;
+				if (b.dx < -1) {
+					b.dx -= 1;
+				}
 			}
 			if (b.getX() >= p.getX() - b.getWidth() 
 					&& b.getX() <= p.getX() + p.getWidth()
@@ -140,6 +179,12 @@ public class MainGame implements Game {
 				} else {
 					b.dx = b.xspeed;
 				}
+				b.player = true;
+				if (!slow) {
+					Sound.play("Hit.wav");
+				} else {
+					Sound.play("PaddleSlow.wav");
+				}
 			}
 			if (b.getX() >= c.getX() - b.getWidth() 
 					&& b.getX() <= c.getX() + c.getWidth()
@@ -151,26 +196,117 @@ public class MainGame implements Game {
 					b.dy = -b.yspeed;
 				}
 				b.dx = -b.xspeed;
+				b.player = false;
+				if (!slow) {
+					Sound.play("Hit.wav");
+				} else {
+					Sound.play("PaddleSlow.wav");
+				}
 			}
 			if (b.getX() < 0) {
 				c.score += c.bonus;
+				if (slow) {
+					slowTime = 99;
+				}
 				resetGame();
 			}
 			if (b.getX() > WIDTH) {
 				p.score += p.bonus;
+				if (p.bonus > 1) {
+					p.bonus = 1;
+				}
+				if (slow) {
+					slowTime = 119;
+				}
 				resetGame();
 			}
-			
+			for (int i = 0; i < Powerup.active.size(); i++) {
+				Powerup p = Powerup.active.get(i);
+				if (b.getX() + b.getWidth() > p.getX() &&
+						b.getX() - b.getWidth() < p.getX() + 30 &&
+						b.getY() + b.getHeight() > p.getY() &&
+						b.getY() - b.getHeight() < p.getY() + 30) {
+					if (b.player) {
+						this.p.power = p;
+					}
+					Powerup.despawn(p.getIteration());
+					Sound.play("Powerup.wav");
+				}
+			}
 			
 			// Computer AI
-			if (c.getY() < b.getY()) {
-				c.setY(c.getY() + c.getSpeed());
+			if (!c.frozen) {
+				if (c.getY() < b.getY()) {
+					c.setY(c.getY() + c.getSpeed());
+				}
+				if (c.getY() > b.getY()) {
+					c.setY(c.getY() - c.getSpeed());
+				}
+				if (b.xspeed > 20) {
+					c.setSpeed(c.getSpeed() * 3);
+				}
 			}
-			if (c.getY() > b.getY()) {
-				c.setY(c.getY() - c.getSpeed());
+			if (c.frozen) {
+				c.freezeTime++;
+				if (c.freezeTime == 15) {
+					c.frozen = false;
+					c.freezeTime = 0;
+				}
 			}
+			
+			// Other Handlers
+			if (slow) {
+				slowTime++;
+				b.xspeed = 1;
+				b.yspeed = 1;
+				if (b.dx < 0) {
+					b.dx = -b.xspeed;
+				} else {
+					b.dx = b.xspeed;
+				}
+				if (b.dy < 0) {
+					b.dy = -b.yspeed;
+				} else {
+					b.dy = b.yspeed;
+				}
+				c.setSpeed(1);
+				if (slowTime == 120) {
+					b.xspeed = 10;
+					b.yspeed = 11;
+					if (b.dx < 0) {
+						b.dx = -b.xspeed;
+					} else {
+						b.dx = b.xspeed;
+					}
+					if (b.dy < 0) {
+						b.dy = -b.yspeed;
+					} else {
+						b.dy = b.yspeed;
+					}
+					c.setSpeed(10);
+					slowTime = 0;
+					slow = false;
+				}
+			}
+			
+			spawnTimer();
 		}
 		
+	}
+	
+	public void spawnTimer() {
+		seconds = (int)System.currentTimeMillis();
+		if (lastSeconds + 1000 < seconds) {
+			realSeconds++;
+			lastSeconds = seconds;
+		}
+		if (realSeconds == 5) {
+			int r = Mathf.random(0, 100);
+			if (r >= 65) {
+				Powerup.spawn();
+			}
+			realSeconds = 0;
+		}
 	}
 	
 	public void resetGame() {
