@@ -5,7 +5,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 
 import com.gandalf1209.yge2.audio.Sound;
 import com.gandalf1209.yge2.engine.Game;
@@ -26,6 +30,7 @@ public class MainGame implements Game {
 	public static int HEIGHTX;
 	
 	public boolean fresh = false;
+	public boolean welcome = false;
 	public boolean ready = false;
 	public boolean slow = false;
 	public int slowTime = 0;
@@ -45,6 +50,9 @@ public class MainGame implements Game {
 	
 	public void init() {
 		fresh = isNew();
+		if (!fresh) {
+			welcome = true;
+		}
 		
 		d = new Display("Advanced Pong - LD31", WIDTH, HEIGHT, this);
 		p = new Player(30, 250, 20, 100);
@@ -79,6 +87,9 @@ public class MainGame implements Game {
 				if (key == Keys.ENTER) {
 					if (fresh) {
 						fresh = false;
+					}
+					if (welcome) {
+						welcome = false;
 					}
 				}
 			}
@@ -115,6 +126,31 @@ public class MainGame implements Game {
 		HEIGHTX = HEIGHT - d.getWindow().getInsets().top;
 		
 		d.initTime(30);
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				File f = new File(getLocation() + "/highscore.txt");
+				try {
+					if (!f.exists()) {
+						f.createNewFile();
+						BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+						bw.write(p.score + "");
+						bw.close();
+					} else {
+						BufferedReader br = new BufferedReader(new FileReader(f));
+						int lastScore = Integer.parseInt(br.readLine());
+						br.close();
+						if (lastScore < p.score) {
+							BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+							bw.write(p.score + "");
+							bw.close();
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -160,8 +196,20 @@ public class MainGame implements Game {
 			g.drawString("Made by Gandalf1209 for Ludum Dare 31", 115, 200);
 			g.drawString("Press Escape to start and to pause", 115, 230);
 			g.drawString("Press Space to use your powerups!", 115, 260);
-			g.drawString("Have a good time playing!", 115, 290);
-			g.drawString("Press ENTER to continue", 115, 320);
+			g.drawString("Move the mouse to move your paddle", 115, 290);
+			g.drawString("Have a good time playing!", 115, 320);
+			g.drawString("Press ENTER to continue", 115, 350);
+		}
+		
+		if (welcome) {
+			g.setColor(g.hex("#828282"));
+			g.fillRect(100, 100, WIDTHX - 200, HEIGHTX - 200);
+			g.setColor(g.hex("#4A4A4A"));
+			g.drawRect(100, 100, WIDTHX - 200, HEIGHTX - 200);
+			g.setColor(g.hex("#000"));
+			g.drawString("Welcome!", 115, 130);
+			g.drawString("High Score: " + getHighScore(), 115, 230);
+			g.drawString("Press ENTER to start!", 115, 290);
 		}
 	}
 
@@ -254,6 +302,7 @@ public class MainGame implements Game {
 				if (b.invisible) {
 					b.invisiTime = 49;
 				}
+				Sound.play("Lose.wav");
 				resetGame();
 			}
 			if (b.getX() > WIDTH) {
@@ -267,6 +316,7 @@ public class MainGame implements Game {
 				if (b.invisible) {
 					b.invisiTime = 49;
 				}
+				Sound.play("Score.wav");
 				resetGame();
 			}
 			for (int i = 0; i < Powerup.active.size(); i++) {
@@ -359,6 +409,34 @@ public class MainGame implements Game {
 			spawnTimer();
 		}
 		
+	}
+	
+	public String getHighScore() {
+		String s = "0";
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(getLocation() + "/highscore.txt"));
+			s = br.readLine();
+			br.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return s;
+	}
+	
+	public String getLocation() {
+		String os = (String) Source.run("system os");
+		String username = (String) Source.run("system user");
+		String loc = "/";
+		if (os.contains("Windows")) {
+			loc = "C:\\Users\\" + username + "\\AppData\\Roaming\\AdvPong";
+		} else if (os.contains("Mac")) {
+			loc = "/Users/" + username + "/Library/AdvPong";
+		} else if (os.contains("Linux")) {
+			loc = "/home/" + username + "/.advpong";
+		} else {
+			System.out.println("Unable to save information due to operating system");
+		}
+		return loc;
 	}
 	
 	public boolean isNew() {
