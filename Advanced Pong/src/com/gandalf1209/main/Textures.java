@@ -15,6 +15,7 @@ public class Textures {
 	public static BufferedImage slowmo;
 	public static BufferedImage bonus2;
 	public static BufferedImage invisi;
+	public static BufferedImage punch;
 	
 	public static void init() {
 		GraphicsLoader gl = new GraphicsLoader();
@@ -28,6 +29,7 @@ public class Textures {
 		slowmo = gl.loadGraphic("SlowMo.png");
 		bonus2 = gl.loadGraphic("Bonus2.png");
 		invisi = gl.loadGraphic("Invisiball.png");
+		punch = gl.loadGraphic("Punch.png");
 	}
 	
 }

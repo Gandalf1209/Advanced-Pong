@@ -15,6 +15,7 @@ public class Powerup {
 	public static Powerup slowmo;
 	public static Powerup bonus2;
 	public static Powerup invisi;
+	public static Powerup punch;
 	
 	private BufferedImage texture;
 	private String name;
@@ -56,6 +57,9 @@ public class Powerup {
 		if (p.getName().equalsIgnoreCase("invisiball")) {
 			MainGame.game.b.invisible = true;
 		}
+		if (p.getName().equalsIgnoreCase("falconpunch")) {
+			player.punch = true;
+		}
 		player.power = null;
 	}
 	
@@ -83,6 +87,7 @@ public class Powerup {
 		slowmo = new Powerup(Textures.slowmo, "SlowMo");
 		bonus2 = new Powerup(Textures.bonus2, "Bonus2");
 		invisi = new Powerup(Textures.invisi, "Invisiball");
+		punch = new Powerup(Textures.punch, "FalconPunch");
 	}
 
 	public BufferedImage getTexture() {

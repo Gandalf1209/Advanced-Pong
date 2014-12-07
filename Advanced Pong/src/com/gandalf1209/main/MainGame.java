@@ -81,9 +81,6 @@ public class MainGame implements Game {
 						fresh = false;
 					}
 				}
-				if (key == Keys.S) {
-					Powerup.use(p, Powerup.slowmo);
-				}
 			}
 
 			@Override
@@ -105,7 +102,7 @@ public class MainGame implements Game {
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				if (ready && !p.aimbot) {
+				if (ready && !p.aimbot && !p.punch) {
 					p.setY(e.getY() - (50 + d.getWindow().getInsets().top));
 				}
 			}
@@ -181,6 +178,19 @@ public class MainGame implements Game {
 				if (p.aimTime == 30) {
 					p.aimbot = false;
 					p.aimTime = 0;
+				}
+			}
+			if (p.punch) {
+				p.punchTime++;
+				if (p.punchTime > 0 && p.punchTime < 16) {
+					p.setX(p.getX() + 10);
+				}
+				if (p.punchTime > 15 && p.punchTime < 31) {
+					p.setX(p.getX() - 10);
+				}
+				if (p.punchTime == 31) {
+					p.punch = false;
+					p.punchTime = 0;
 				}
 			}
 			
@@ -267,6 +277,9 @@ public class MainGame implements Game {
 						b.getY() - b.getHeight() < p.getY() + 30) {
 					if (b.player) {
 						this.p.power = p;
+						if (this.p.power.getName().contains("Bonus")) {
+							Powerup.use(this.p, this.p.power);
+						}
 					}
 					Powerup.despawn(p.getIteration());
 					Sound.play("Powerup.wav");
@@ -368,8 +381,7 @@ public class MainGame implements Game {
 			dir.mkdir();
 			isNew = true;
 		} else {
-			// TODO Fix vvv
-			//isNew = false;
+			isNew = false;
 		}
 		return isNew;
 	}

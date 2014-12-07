@@ -18,6 +18,9 @@ public class Player {
 	public boolean aimbot = false;
 	public int aimTime = 0;
 	
+	public boolean punch = false;
+	public int punchTime = 0;
+	
 	public Player(int x, int y, int w, int h) {
 		this.x = x;
 		this.y = y;
