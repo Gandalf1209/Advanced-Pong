@@ -5,6 +5,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
 
 import com.gandalf1209.yge2.audio.Sound;
 import com.gandalf1209.yge2.engine.Game;
@@ -14,6 +15,7 @@ import com.gandalf1209.yge2.graphics.Display;
 import com.gandalf1209.yge2.graphics.GraphicsX;
 import com.gandalf1209.yge2.input.Keys;
 import com.gandalf1209.yge2.util.FontHandler;
+import com.gandalf1209.yge2.util.Source;
 
 public class MainGame implements Game {
 
@@ -23,6 +25,7 @@ public class MainGame implements Game {
 	public static int WIDTHX;
 	public static int HEIGHTX;
 	
+	public boolean fresh = false;
 	public boolean ready = false;
 	public boolean slow = false;
 	public int slowTime = 0;
@@ -41,6 +44,8 @@ public class MainGame implements Game {
 	}
 	
 	public void init() {
+		fresh = isNew();
+		
 		d = new Display("Advanced Pong - LD31", WIDTH, HEIGHT, this);
 		p = new Player(30, 250, 20, 100);
 		c = new Computer(750, 250, 20, 100, 10);
@@ -70,6 +75,14 @@ public class MainGame implements Game {
 					if (ready && p.power != null) {
 						p.usePowerup();
 					}
+				}
+				if (key == Keys.ENTER) {
+					if (fresh) {
+						fresh = false;
+					}
+				}
+				if (key == Keys.S) {
+					Powerup.use(p, Powerup.slowmo);
 				}
 			}
 
@@ -136,6 +149,22 @@ public class MainGame implements Game {
 		
 		if (!ready) {
 			g.drawString("Press ESCAPE to continue!", 200, 300);
+		}
+		
+		if (fresh) {
+			g.setColor(g.hex("#828282"));
+			g.fillRect(100, 100, WIDTHX - 200, HEIGHTX - 200);
+			g.setColor(g.hex("#4A4A4A"));
+			g.drawRect(100, 100, WIDTHX - 200, HEIGHTX - 200);
+			g.setColor(g.hex("#000"));
+			g.drawString("Welcome!", 115, 130);
+			g.setFont(new Font("Code New Roman", Font.PLAIN, 24));
+			g.drawString("Welcome to Advanced Pong!", 115, 170);
+			g.drawString("Made by Gandalf1209 for Ludum Dare 31", 115, 200);
+			g.drawString("Press Escape to start and to pause", 115, 230);
+			g.drawString("Press Space to use your powerups!", 115, 260);
+			g.drawString("Have a good time playing!", 115, 290);
+			g.drawString("Press ENTER to continue", 115, 320);
 		}
 	}
 
@@ -317,6 +346,32 @@ public class MainGame implements Game {
 			spawnTimer();
 		}
 		
+	}
+	
+	public boolean isNew() {
+		boolean isNew = true;
+		String os = (String) Source.run("system os");
+		String username = (String) Source.run("system user");
+		String loc = "/";
+		if (os.contains("Windows")) {
+			loc = "C:\\Users\\" + username + "\\AppData\\Roaming\\AdvPong";
+		} else if (os.contains("Mac")) {
+			loc = "/Users/" + username + "/Library/AdvPong";
+		} else if (os.contains("Linux")) {
+			loc = "/home/" + username + "/.advpong";
+		} else {
+			System.out.println("Unable to save information due to operating system");
+			return true;
+		}
+		File dir = new File(loc);
+		if (!dir.exists()) {
+			dir.mkdir();
+			isNew = true;
+		} else {
+			// TODO Fix vvv
+			//isNew = false;
+		}
+		return isNew;
 	}
 	
 	public void spawnTimer() {
